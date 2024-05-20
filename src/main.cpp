@@ -164,6 +164,20 @@ int main(void)
     }
     stbi_image_free(data);
 
+    std::string filepath2 = "./image/testImage2.png";
+    unsigned char *data2 = stbi_load(filepath.c_str(), &width, &height, &nrChannels, 0);
+    if (data2)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data2);
+
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        SPDLOG_ERROR("failed to load image: {}", filepath2);
+    }
+    stbi_image_free(data2);
+
     glUseProgram(shaderProgram);
 
     // main loop
