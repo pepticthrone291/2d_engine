@@ -13,7 +13,7 @@ class SpriteRenderer
 public:
     SpriteRenderer(Shader &shader);
     ~SpriteRenderer();
-    void DrawSprite(glm::vec2 position, Texture &texture);
+    void DrawSprite(glm::vec2 position, glm::vec2 size, Texture &texture);
 private:
     Shader shader;
     uint32_t quadVAO;

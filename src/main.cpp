@@ -9,6 +9,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
 #include "shader.h"
 #include "sprite_renderer.h"
 #include "texture.h"
@@ -34,7 +37,7 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     SPDLOG_INFO("Create glfw window");
-    auto window = glfwCreateWindow(800, 600, "2D Engine", nullptr, nullptr);
+    auto window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "2D Engine", nullptr, nullptr);
     if (!window)
     {
         SPDLOG_ERROR("failed to create glfw window");
@@ -53,15 +56,29 @@ int main(void)
     auto glVersion = glGetString(GL_VERSION);
     SPDLOG_INFO("OpenGL context version: {}", (const char*)glVersion);
 
-    glViewport(0, 0, 800, 600);
+    auto imguiContext = ImGui::CreateContext();
+    ImGui::SetCurrentContext(imguiContext);
+    ImGui_ImplGlfw_InitForOpenGL(window, false);
+    ImGui_ImplOpenGL3_Init();
+    ImGui_ImplOpenGL3_CreateFontsTexture();
+    ImGui_ImplOpenGL3_CreateDeviceObjects();
+
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     SpriteRenderer *render;
     Shader firstShader = LoadShader("./shader/vshader.vs", "./shader/fshader.fs");
     render = new SpriteRenderer(firstShader);
+    auto projection = glm::ortho(-0.5f * (float)WINDOW_WIDTH, 0.5f * (float)WINDOW_WIDTH, -0.5f * (float)WINDOW_HEIGHT, 0.5f * (float)WINDOW_HEIGHT, -1.0f, 1.0f);
+    firstShader.Use().SetMatrix4("projection", projection);
 
     // variables
-    glm::vec2 position1 = glm::vec2(0.0f, 0.0f);
-    glm::vec2 position2 = glm::vec2(0.5f, 0.0f);
+    glm::vec2 position1 {glm::vec2(0.0f, 0.0f)};
+    glm::vec2 position2 {glm::vec2(200.0f, 0.0f)};
+    glm::vec2 size1 {glm::vec2(100.0f, 100.0f)};
+    glm::vec2 size2 {glm::vec2(100.0f, 100.0f)};
+    
+
+    float moveSpeed {2.0f};
 
     Texture texture1 = LoadTexture("./image/testImage.png");
     Texture texture2 = LoadTexture("./image/testImage2.png");
@@ -73,15 +90,40 @@ int main(void)
     {
         processInput(window);
 
-        glClearColor(0.2f, 0.1f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
 
-        render->DrawSprite(position1, texture1);
-        render->DrawSprite(position2, texture2);
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            position1.x += moveSpeed;
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            position1.x -= moveSpeed;
+
+        if (ImGui::Begin("physical simulation test"))
+        {
+            ImGui::DragFloat("move speed", &moveSpeed, 0.02f, 0.0f, 50.0f);
+        }
+        ImGui::End();
+
+        glClearColor(0.1f, 0.2f, 0.2f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
+
+        render->DrawSprite(position1, size1, texture1);
+        render->DrawSprite(position2, size2, texture2);
 
         glfwPollEvents();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         glfwSwapBuffers(window);
     }
+
+    ImGui_ImplOpenGL3_DestroyFontsTexture();
+    ImGui_ImplOpenGL3_DestroyDeviceObjects();
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext(imguiContext);
 
     glfwTerminate();
     return 0;
