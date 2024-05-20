@@ -13,6 +13,7 @@ add_executable(${PROJECT_NAME}
   src/shader.cpp src/shader.h
   src/sprite_renderer.cpp src/sprite_renderer.h
   src/texture.cpp src/texture.h
+  src/collider.cpp src/collider.h
 )
 
 include(Dependency.cmake)

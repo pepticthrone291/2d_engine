@@ -1,7 +1,6 @@
 #include "collider.h"
 
-Collider::Collider(glm::vec2 position, glm::vec2 size, Shader &shader)
-    :Position(position), Size(size)
+Collider::Collider(Shader &shader)
 {
     this->shader = shader;
     this->initRenderData();
@@ -12,17 +11,17 @@ Collider::~Collider()
     glDeleteVertexArrays(1, &this->quadVAO);
 }
 
-void Collider::Draw()
+void Collider::Draw(glm::vec2 position, glm::vec2 size)
 {
     this->shader.Use();
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(Position, 0.0f));  // first translate (transformations are: scale happens first, then rotation, and then final translation happens; reversed order)
+    model = glm::translate(model, glm::vec3(position, 0.0f));  // first translate (transformations are: scale happens first, then rotation, and then final translation happens; reversed order)
 
-    model = glm::scale(model, glm::vec3(Size, 1.0f)); // last scale
+    model = glm::scale(model, glm::vec3(size, 1.0f)); // last scale
 
     this->shader.SetMatrix4("model", model);
 
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_LINE_LOOP, 6, GL_UNSIGNED_INT, 0);
 }
 
 void Collider::initRenderData()

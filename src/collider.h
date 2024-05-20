@@ -11,11 +11,9 @@
 class Collider
 {
 public:
-    Collider(glm::vec2 position, glm::vec2 size, Shader &shader);
+    Collider(Shader &shader);
     ~Collider();
-    void Draw();
-    glm::vec2 Position;
-    glm::vec2 Size;
+    void Draw(glm::vec2 position, glm::vec2 size);
     bool colliderDrawn;
 private:
     Shader shader;

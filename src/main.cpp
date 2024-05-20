@@ -15,7 +15,9 @@
 #include "shader.h"
 #include "sprite_renderer.h"
 #include "texture.h"
+#include "collider.h"
 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 std::optional<std::string> loadTextFile(const std::string &filename);
 Shader LoadShader(const char *vShaderFile, const char *fShaderFile);
@@ -56,6 +58,8 @@ int main(void)
     auto glVersion = glGetString(GL_VERSION);
     SPDLOG_INFO("OpenGL context version: {}", (const char*)glVersion);
 
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
     auto imguiContext = ImGui::CreateContext();
     ImGui::SetCurrentContext(imguiContext);
     ImGui_ImplGlfw_InitForOpenGL(window, false);
@@ -68,15 +72,21 @@ int main(void)
     SpriteRenderer *render;
     Shader firstShader = LoadShader("./shader/vshader.vs", "./shader/fshader.fs");
     render = new SpriteRenderer(firstShader);
+
     auto projection = glm::ortho(-0.5f * (float)WINDOW_WIDTH, 0.5f * (float)WINDOW_WIDTH, -0.5f * (float)WINDOW_HEIGHT, 0.5f * (float)WINDOW_HEIGHT, -1.0f, 1.0f);
     firstShader.Use().SetMatrix4("projection", projection);
+    
 
     // variables
     glm::vec2 position1 {glm::vec2(0.0f, 0.0f)};
     glm::vec2 position2 {glm::vec2(200.0f, 0.0f)};
     glm::vec2 size1 {glm::vec2(100.0f, 100.0f)};
     glm::vec2 size2 {glm::vec2(100.0f, 100.0f)};
-    
+
+    Collider *collider1;
+    Shader shader2 = LoadShader("./shader/collvshader.vs", "./shader/collfshader.fs");
+    collider1 = new Collider(shader2);
+    shader2.Use().SetMatrix4("projection", projection);
 
     float moveSpeed {2.0f};
 
@@ -110,6 +120,7 @@ int main(void)
 
         render->DrawSprite(position1, size1, texture1);
         render->DrawSprite(position2, size2, texture2);
+        collider1->Draw(position1, size1);
 
         glfwPollEvents();
 
@@ -127,6 +138,11 @@ int main(void)
 
     glfwTerminate();
     return 0;
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
 }
 
 void processInput(GLFWwindow *window)
