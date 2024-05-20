@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include <spdlog/spdlog.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -7,6 +5,9 @@
 #include <optional>
 #include <fstream>
 #include <sstream>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb/stb_image.h>
 
 void processInput(GLFWwindow *window);
 std::optional<std::string> loadTextFile(const std::string &filename);
@@ -109,33 +110,73 @@ int main(void)
 
     // variables
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.0f, 0.5f, 0.0f
+        -0.5f, -0.5f, 0.0f, 1.0f,
+        0.5f, -0.5f, 1.0f, 1.0f,
+        0.5f, 0.5f, 1.0f, 0.0f,
+        -0.5f, 0.5f, 0.0f, 0.0f,
+    };
+    uint32_t indices[] = {
+        0,  2,  1,  2,  0,  3,
     };
 
-    uint32_t VBO;
-    glGenBuffers(1, &VBO);
-    uint32_t VAO;
+    uint32_t VBO, EBO, VAO;
     glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+    
+    glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBindVertexArray(VAO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    // position attribute
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
     glEnableVertexAttribArray(0);
+    // texture coord attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    
+    uint32_t texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    int width, height, nrChannels;
+    std::string filepath = "./image/testImage.png";
+    unsigned char *data = stbi_load(filepath.c_str(), &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        SPDLOG_ERROR("failed to load image: {}", filepath);
+    }
+    stbi_image_free(data);
 
     glUseProgram(shaderProgram);
 
     // main loop
     while(!glfwWindowShouldClose(window))
     {
-        glClearColor(0.2f, 0.1f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
         processInput(window);
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glClearColor(0.2f, 0.1f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        
+        glBindTexture(GL_TEXTURE_2D, texture);
+
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glfwPollEvents();
         glfwSwapBuffers(window);
