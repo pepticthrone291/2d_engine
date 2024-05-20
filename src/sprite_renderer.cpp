@@ -23,7 +23,9 @@ void SpriteRenderer::DrawSprite(glm::vec2 position, glm::vec2 size, Texture &tex
 
     texture.Bind();
 
+    glBindVertexArray(this->quadVAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
 }
 
 void SpriteRenderer::initRenderData()

@@ -21,36 +21,31 @@ void Collider::Draw(glm::vec2 position, glm::vec2 size)
 
     this->shader.SetMatrix4("model", model);
 
-    glDrawElements(GL_LINE_LOOP, 6, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(this->quadVAO);
+    glDrawArrays(GL_LINE_LOOP, 0, 4);
+    glBindVertexArray(0);
 }
 
 void Collider::initRenderData()
 {
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f, 1.0f,
-        0.5f, -0.5f, 1.0f, 1.0f,
-        0.5f, 0.5f, 1.0f, 0.0f,
-        -0.5f, 0.5f, 0.0f, 0.0f,
+        -0.5f, -0.5f,
+        0.5f, -0.5f,
+        0.5f, 0.5f,
+        -0.5f, 0.5f,
     };
-    uint32_t indices[] = {
-        0,  2,  1,  2,  0,  3,
-    };
-    uint32_t VBO, EBO;
+
+    uint32_t VBO;
     glGenVertexArrays(1, &this->quadVAO);
     glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
 
     glBindVertexArray(quadVAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
     // position attribute
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
     glEnableVertexAttribArray(0);
-    // texture coord attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
     glEnableVertexAttribArray(1);
 }

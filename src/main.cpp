@@ -81,7 +81,9 @@ int main(void)
     glm::vec2 position1 {glm::vec2(0.0f, 0.0f)};
     glm::vec2 position2 {glm::vec2(200.0f, 0.0f)};
     glm::vec2 size1 {glm::vec2(100.0f, 100.0f)};
-    glm::vec2 size2 {glm::vec2(100.0f, 100.0f)};
+    glm::vec2 collsize1 {glm::vec2(30.0f, 100.0f)};
+    glm::vec2 size2 {glm::vec2(200.0f, 200.0f)};
+    glm::vec2 collsize2 {glm::vec2(80.0f, 100.0f)};
 
     Collider *collider1;
     Shader shader2 = LoadShader("./shader/collvshader.vs", "./shader/collfshader.fs");
@@ -92,8 +94,6 @@ int main(void)
 
     Texture texture1 = LoadTexture("./image/testImage.png");
     Texture texture2 = LoadTexture("./image/testImage2.png");
-
-    firstShader.Use();
 
     // main loop
     while(!glfwWindowShouldClose(window))
@@ -115,12 +115,12 @@ int main(void)
         ImGui::End();
 
         glClearColor(0.1f, 0.2f, 0.2f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glEnable(GL_DEPTH_TEST);
-
-        render->DrawSprite(position1, size1, texture1);
+        glClear(GL_COLOR_BUFFER_BIT);
+        
         render->DrawSprite(position2, size2, texture2);
-        collider1->Draw(position1, size1);
+        render->DrawSprite(position1, size1, texture1);
+        collider1->Draw(position1, collsize1);
+        collider1->Draw(position2, collsize2);
 
         glfwPollEvents();
 
