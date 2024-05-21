@@ -1,61 +1,43 @@
 #include "shader.h"
 
-Shader &Shader::Use()
+ShaderUPtr Shader::CreateFromFile(const std::string& filename, GLenum shaderType)
 {
-    glUseProgram(this->ID);
-    return *this;
+    auto shader = std::unique_ptr<Shader>(new Shader());
+    if (!shader->LoadFile(filename, shaderType))
+        return nullptr;
+    return std::move(shader);
 }
 
-void Shader::Compile(const char *vertexSource, const char *fragmentSource)
+Shader::~Shader()
 {
-    uint32_t vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexSource, nullptr);
-    glCompileShader(vertexShader);
-    checkCompileError(vertexShader, "VERTEX");
-
-    uint32_t fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentSource, nullptr);
-    glCompileShader(fragmentShader);
-    checkCompileError(fragmentShader, "FRAGMENT");
-
-    this->ID = glCreateProgram();
-    glAttachShader(this->ID, vertexShader);
-    glAttachShader(this->ID, fragmentShader);
-    glLinkProgram(this->ID);
-    checkCompileError(this->ID, "PROGRAM");
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    if (m_shader) glDeleteShader(m_shader);
 }
 
-void Shader::SetMatrix4(const std::string& name, const glm::mat4& value) const
+bool Shader::LoadFile(const std::string& filename, GLenum shaderType)
 {
-    glUniformMatrix4fv(glGetUniformLocation(this->ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
-}
+    auto result = LoadTextFile(filename);
+    if (!result.has_value())
+        return false;
 
-void Shader::checkCompileError(uint32_t object, std::string type)
-{
-    int32_t success;
-    char infoLog[1024];
-    glGetShaderiv(object, GL_COMPILE_STATUS, &success);
-    if (type != "PROGRAM")
+    auto& code = result.value();
+    const char* codePtr = code.c_str();
+    int32_t codeLength = (int32_t)code.length();
+
+    // create and compile shader
+    m_shader = glCreateShader(shaderType);
+    glShaderSource(m_shader, 1, (const GLchar* const*)&codePtr, &codeLength);
+    glCompileShader(m_shader);
+
+    // check compile error
+    int success = 0;
+    glGetShaderiv(m_shader, GL_COMPILE_STATUS, &success);
+    if (!success)
     {
-        glGetShaderiv(object, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
-            glGetShaderInfoLog(object, 1024, NULL, infoLog);
-            SPDLOG_ERROR("failed to compile shader");
-            SPDLOG_ERROR("reason: {}", infoLog);
-        }
+        char infoLog[1024];
+        glGetShaderInfoLog(m_shader, 1024, nullptr, infoLog);
+        SPDLOG_ERROR("failed to compile shader: \"{}\"", filename);
+        SPDLOG_ERROR("reason: {}", infoLog);
+        return false;
     }
-    else
-    {
-        glGetProgramiv(object, GL_LINK_STATUS, &success);
-        if (!success)
-        {
-            glGetProgramInfoLog(object, 1024, NULL, infoLog);
-            SPDLOG_ERROR("failed to link program");
-            SPDLOG_ERROR("reason: {}", infoLog);
-        }
-    }
+    return true;
 }
