@@ -1,0 +1,94 @@
+import pygame
+import sys
+import math
+
+# Pygame 초기화
+pygame.init()
+
+# 화면 크기 설정
+screen_width = 800
+screen_height = 600
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption('8 방향 움직임 예제')
+
+# 색상 정의
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+
+# 플레이어 설정
+player_size = 50
+player_x = screen_width // 2
+player_y = screen_height // 2
+player_speed = 5
+
+# 오브젝트 설정
+object_size = 100
+object_x = 300
+object_y = 200
+
+# 충돌 감지 함수
+def check_collision(player_rect, object_rect):
+    return player_rect.colliderect(object_rect)
+
+# 게임 루프
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # 키보드 입력 처리
+    keys = pygame.key.get_pressed()
+    move_x = 0
+    move_y = 0
+    if keys[pygame.K_UP]:
+        move_y -= 1
+    if keys[pygame.K_DOWN]:
+        move_y += 1
+    if keys[pygame.K_LEFT]:
+        move_x -= 1
+    if keys[pygame.K_RIGHT]:
+        move_x += 1
+
+    # 대각선 이동 속도 조정
+    if move_x != 0 or move_y != 0:
+        length = math.sqrt(move_x ** 2 + move_y ** 2)
+        move_x = (move_x / length) * player_speed
+        move_y = (move_y / length) * player_speed
+
+    # 잠재적 위치 계산
+    new_player_x = player_x + move_x
+    new_player_y = player_y + move_y
+
+    # 플레이어와 오브젝트의 사각형 정의
+    player_rect = pygame.Rect(new_player_x, new_player_y, player_size, player_size)
+    object_rect = pygame.Rect(object_x, object_y, object_size, object_size)
+
+    # 충돌 감지
+    if not check_collision(player_rect, object_rect):
+        player_x = new_player_x
+        player_y = new_player_y
+
+    # 화면 경계 체크
+    if player_x < 0:
+        player_x = 0
+    elif player_x > screen_width - player_size:
+        player_x = screen_width - player_size
+    if player_y < 0:
+        player_y = 0
+    elif player_y > screen_height - player_size:
+        player_y = screen_height - player_size
+
+    # 화면 업데이트
+    screen.fill(WHITE)
+    pygame.draw.rect(screen, BLACK, (player_x, player_y, player_size, player_size))
+    pygame.draw.rect(screen, RED, (object_x, object_y, object_size, object_size))
+    pygame.display.flip()
+
+    # 프레임 레이트 설정
+    pygame.time.Clock().tick(30)
+
+# Pygame 종료
+pygame.quit()
+sys.exit()

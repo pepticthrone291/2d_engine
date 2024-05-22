@@ -25,8 +25,12 @@ void Context::ProcessInput(GLFWwindow* window)
         move = moveSpeed * glm::normalize(move);
     }
 
-    position1.x += move.x;
-    position1.y += move.y;
+    newPosition1.x += move.x;
+    newPosition1.y += move.y;
+
+    // 충돌 체크 후 실제 위치 갱신
+
+
 }
 
 void Context::Reshape(int width, int height)
@@ -45,9 +49,9 @@ void Context::MouseButton(int button, int action, double x, double y)
     
 }
 
-void Collision()
+void Collision(glm::vec3 position1, glm::vec3 size1, glm::vec3 position2, glm::vec3 size2)
 {
-
+    
 }
 
 bool Context::Init()

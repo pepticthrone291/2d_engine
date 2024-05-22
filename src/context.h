@@ -17,7 +17,7 @@ public:
     void Reshape(int width, int height);
     void MouseMove(double x, double y);
     void MouseButton(int button, int action, double x, double y);
-    void Collision();
+    void Collision(glm::vec3 position1, glm::vec3 size1, glm::vec3 position2, glm::vec3 size2);
 private:
     Context() {}
     bool Init();
@@ -34,6 +34,7 @@ private:
     int m_height {WINDOW_HEIGHT};
 
     glm::vec3 position1 {glm::vec3(0.0f)};
+    glm::vec3 newPosition1 {glm::vec3(0.0f)};
     glm::vec3 size1 {glm::vec3(50.0f)};
     glm::vec3 position2 {glm::vec3(200.0f, 0.0f, 0.0f)};
     float moveSpeed {3.0f};
