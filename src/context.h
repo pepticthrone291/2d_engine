@@ -17,6 +17,7 @@ public:
     void Reshape(int width, int height);
     void MouseMove(double x, double y);
     void MouseButton(int button, int action, double x, double y);
+    void Collision();
 private:
     Context() {}
     bool Init();
@@ -35,6 +36,8 @@ private:
     glm::vec3 position1 {glm::vec3(0.0f)};
     glm::vec3 size1 {glm::vec3(50.0f)};
     glm::vec3 position2 {glm::vec3(200.0f, 0.0f, 0.0f)};
+    float moveSpeed {3.0f};
+    glm::vec2 move {glm::vec2(0.0f)};
 };
 
 #endif // __CONTEXT_H__

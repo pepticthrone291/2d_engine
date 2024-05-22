@@ -8,9 +8,25 @@ ContextUPtr Context::Create()
     return std::move(context);
 }
 
-void Context::ProcessInput(GLFWwindow* window) 
+void Context::ProcessInput(GLFWwindow* window)
 {
+    move = glm::vec2(0.0f, 0.0f);
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        move.y += 1.0f;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        move.y -= 1.0f;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        move.x += 1.0f;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        move.x -= 1.0f;
 
+    if (move != glm::vec2(0.0f, 0.0f))
+    {
+        move = moveSpeed * glm::normalize(move);
+    }
+
+    position1.x += move.x;
+    position1.y += move.y;
 }
 
 void Context::Reshape(int width, int height)
@@ -22,12 +38,16 @@ void Context::Reshape(int width, int height)
 
 void Context::MouseMove(double x, double y)
 {
-    
 }
 
 void Context::MouseButton(int button, int action, double x, double y)
 {
     
+}
+
+void Collision()
+{
+
 }
 
 bool Context::Init()
@@ -39,7 +59,6 @@ bool Context::Init()
     SPDLOG_INFO("vertex shader id: {}", vertexShader->Get());
     SPDLOG_INFO("fragment shader id: {}", fragmentShader->Get());
     m_program = Program::Create({vertexShader, fragmentShader});
-    SPDLOG_INFO("program id: {}", m_program->Get());
 
     float vertices[] = {
         -0.5f, -0.5f, 0.0f,
@@ -64,7 +83,7 @@ void Context::Render()
 {
     glClear(GL_COLOR_BUFFER_BIT);
         
-    m_program->Use();
+    m_program->Use();   
     auto projection = glm::ortho(-0.5f * WINDOW_WIDTH, 0.5f * WINDOW_WIDTH, -0.5f * WINDOW_HEIGHT, 0.5f * WINDOW_HEIGHT, -1.0f, 1.0f);
     auto model = glm::translate(glm::mat4(1.0f), position1);
     model = glm::scale(model, size1);
