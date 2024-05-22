@@ -37,7 +37,7 @@ private:
     glm::vec3 newPosition1 {glm::vec3(0.0f)};
     glm::vec3 size1 {glm::vec3(50.0f)};
     glm::vec3 position2 {glm::vec3(200.0f, 0.0f, 0.0f)};
-    float moveSpeed {3.0f};
+    float moveSpeed {2.0f};
     glm::vec2 move {glm::vec2(0.0f)};
 };
 

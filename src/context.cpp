@@ -43,18 +43,8 @@ void Context::ProcessInput(GLFWwindow* window)
             position1.y = newPosition1.y;
         else move.y = 0.0f;
     }
-    if (move.x == 0 && move.y != 0)
-    {
-        newPosition1.y = position1.y + move.y;
-        if (!Collision(glm::vec3(position1.x, newPosition1.y, position1.z), size1, position2, size1))
-            position1.y = newPosition1.y;
-    }
-    if (move.y == 0 && move.x != 0)
-    {
-        newPosition1.x = position1.x + move.x;
-        if (!Collision(glm::vec3(newPosition1.x, position1.y, position1.z), size1, position2, size1))
-            position1.x = newPosition1.x;
-    }
+
+    SPDLOG_INFO("{}, {}", move.x, move.y);
 }
 
 void Context::Reshape(int width, int height)
