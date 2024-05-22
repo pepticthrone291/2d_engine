@@ -25,12 +25,36 @@ void Context::ProcessInput(GLFWwindow* window)
         move = moveSpeed * glm::normalize(move);
     }
 
-    newPosition1.x += move.x;
-    newPosition1.y += move.y;
+    newPosition1.x = position1.x + move.x;
+    newPosition1.y = position1.y + move.y;
 
     // 충돌 체크 후 실제 위치 갱신
-
-
+    if (move.x != 0)
+    {
+        newPosition1.x = position1.x + move.x;
+        if (!Collision(glm::vec3(newPosition1.x, position1.y, position1.z), size1, position2, size1))
+            position1.x = newPosition1.x;
+        else move.x = 0.0f;
+    }
+    if (move.y != 0)
+    {
+        newPosition1.y = position1.y + move.y;
+        if (!Collision(glm::vec3(position1.x, newPosition1.y, position1.z), size1, position2, size1))
+            position1.y = newPosition1.y;
+        else move.y = 0.0f;
+    }
+    if (move.x == 0 && move.y != 0)
+    {
+        newPosition1.y = position1.y + move.y;
+        if (!Collision(glm::vec3(position1.x, newPosition1.y, position1.z), size1, position2, size1))
+            position1.y = newPosition1.y;
+    }
+    if (move.y == 0 && move.x != 0)
+    {
+        newPosition1.x = position1.x + move.x;
+        if (!Collision(glm::vec3(newPosition1.x, position1.y, position1.z), size1, position2, size1))
+            position1.x = newPosition1.x;
+    }
 }
 
 void Context::Reshape(int width, int height)
@@ -49,9 +73,17 @@ void Context::MouseButton(int button, int action, double x, double y)
     
 }
 
-void Collision(glm::vec3 position1, glm::vec3 size1, glm::vec3 position2, glm::vec3 size2)
+bool Context::Collision(glm::vec3 position1, glm::vec3 size1, glm::vec3 position2, glm::vec3 size2)
 {
-    
+    float xThick = (size1.x + size2.x) / 2.0f;
+    float yThick = (size1.y + size2.y) / 2.0f;
+
+    float xDis = position1.x - position2.x;
+    float yDis = position1.y - position2.y;
+
+    if (xDis <= xThick && xDis >= -xThick && yDis <= yThick && yDis >= -yThick)
+        return true;
+    else return false;
 }
 
 bool Context::Init()
